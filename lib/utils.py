@@ -1,5 +1,4 @@
 import gzip
-from msilib import sequence
 import os
 from typing import List, Set
 from lib import Params, Types, Interval_base, Interval_base
@@ -36,7 +35,7 @@ def read_cnv_file(infile):
                 result.append(row_dict)
     return result
 
-def _get_overlap(interval:Interval_base, sequence_type, tbx_gtf, gene_id:bool) -> Set[str]:
+def _get_overlap(interval:Interval_base, sequence_type, tbx_gtf, gene_id:bool, protein_coding_gene:bool) -> Set[str]:
     result = set()
     chrom = interval.chrom.lstrip('chr')
     if chrom == 'M':
@@ -49,13 +48,15 @@ def _get_overlap(interval:Interval_base, sequence_type, tbx_gtf, gene_id:bool) -
         for field in row[-1].split('; '):
             key, value = field.split(' ', 1)
             info[key] = value.split('"')[1]
+        if protein_coding_gene and info.get('transcript_biotype', info['gene_biotype']) != 'protein_coding':
+            continue
         if gene_id:
             result.add(info['gene_id'])
         else:
             result.add(info['gene_name'])
     return result
 
-def get_protein_coding_disrupted_genes(interval:Interval_base, interval_type:Types.SVtype, tbx_gtf, gene_id = True, feature = 'exon') -> List[str]:
+def get_protein_coding_disrupted_genes(interval:Interval_base, interval_type:Types.SVtype, tbx_gtf, gene_id = True, feature = 'exon', protein_coding_gene = True) -> List[str]:
     '''
     For CDS/exon and Genes
     INV: to be protein-coding disrupting, it has to cover at least one exon, 
@@ -64,7 +65,7 @@ def get_protein_coding_disrupted_genes(interval:Interval_base, interval_type:Typ
     '''
     if feature not in ('exon', 'CDS'):
         raise ValueError(f"feature has to be iether exon or CDS, got {feature}")
-    covered_feature = _get_overlap(interval, feature, tbx_gtf, gene_id)
+    covered_feature = _get_overlap(interval, feature, tbx_gtf, gene_id, protein_coding_gene)
     if covered_feature:
         if interval_type == Types.SVtype.LOSS:
             return list(covered_feature)
@@ -72,12 +73,12 @@ def get_protein_coding_disrupted_genes(interval:Interval_base, interval_type:Typ
             interval.chrom,
             interval.start,
             interval.start + 1,
-            ), 'gene', tbx_gtf, gene_id)
+            ), 'gene', tbx_gtf, gene_id, protein_coding_gene)
         end_genes = _get_overlap(Interval_base(
             interval.chrom,
             interval.end,
             interval.end + 1,
-            ), 'gene', tbx_gtf, gene_id)
+            ), 'gene', tbx_gtf, gene_id, protein_coding_gene)
         boundary_genes = set()
         if interval_type == Types.SVtype.INV:
             boundary_genes = start_genes | end_genes
