@@ -34,7 +34,7 @@ class SV(Base):
     start = sa.Column(sa.Integer, index=True)
     end = sa.Column(sa.Integer, index=True)
     sv_type = sa.Column(sa.String, index=True)
-    #N_carriers = sa.Column(sa.Integer, index=True)
+    N_carriers = sa.Column(sa.Integer, index=True)
     gnomad_freq = sa.Column(sa.Numeric, index=True)
     dbvar_count = sa.Column(sa.Integer, index=True)
     decipher_freq = sa.Column(sa.Numeric, index=True)

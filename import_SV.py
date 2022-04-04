@@ -207,8 +207,30 @@ def main(config):
                 session.add(Patient_SV_entity)
         session.commit()
     session.commit()
-        
-        
+    # N_carriers
+    inner_session = Session(engine)
+    print('calculate N_carriers')
+    for sv in session.query(models.SV):
+        sv_size = sv.end - sv.start
+        overlapping_svs = session.query(models.SV, models.Patient_SV)\
+            .filter(models.SV.id == models.Patient_SV.sv_id)\
+            .filter(
+                (models.SV.chrom == sv.chrom) &
+                (models.SV.sv_type == sv.sv_type) &
+                (models.SV.end >= sv.end - sv_size * config['params']['distance']) &
+                (models.SV.end <= sv.end + sv_size * (1 / (1 - config['params']['distance']) - 1)) &
+                (models.SV.start <= sv.start + sv_size * config['params']['distance']) &
+                (models.SV.start >= sv.start - sv_size * (1 / (1 - config['params']['distance']) -1)) &
+                ((sa.func.min(models.SV.end, sv.end) - sa.func.max(models.SV.start, sv.start)) / (sa.func.max(models.SV.end, sv.end) - sa.func.min(models.SV.start, sv.start)) > (1 - config['params']['distance']) )
+            )
+        carriers = set()
+        for os in overlapping_svs:
+            # result is a joined table,
+            # os[0] is SV, os[1] is Patient_SV
+            # get unique patients
+            carriers.add(os[1].patient_id)
+        sv.N_carriers = len(carriers)
+    session.commit()
 if __name__ == '__main__':
     with open('config.yml', 'rt') as inf:
         config = yaml.safe_load(inf)
