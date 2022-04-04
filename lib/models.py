@@ -11,7 +11,7 @@ No need for relations / back_polulate.
 But in case it does, refer to https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
 '''
 class Patient(Base):
-    __tablename__ = 'patient'
+    __tablename__ = 'Patient'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     name = sa.Column(sa.String, index=True, unique=True)
@@ -40,10 +40,10 @@ class SV(Base):
     decipher_freq = sa.Column(sa.Numeric, index=True)
     
 class Patient_SV(Base):
-    __tablename__ = 'patient_SV'
+    __tablename__ = 'Patient_SV'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    patient_id = sa.Column(sa.Integer, sa.ForeignKey("patient.id"), nullable=False)
+    patient_id = sa.Column(sa.Integer, sa.ForeignKey("Patient.id"), nullable=False)
     sv_id = sa.Column(sa.Integer, sa.ForeignKey("SV.id"), nullable=False)
     genotype = sa.Column(sa.String, nullable=False)
     vcf_id = sa.Column(sa.String, nullable=False)
@@ -54,7 +54,7 @@ class Patient_SV(Base):
     validated_as_real = sa.Column(sa.Boolean, index=True)
     
 class Gene(Base):
-    __tablename__ = 'gene'
+    __tablename__ = 'Gene'
     
     # id is ensembl id without the ENSG part
     id = sa.Column(sa.Integer, primary_key=True)
@@ -64,25 +64,25 @@ class Gene(Base):
     end = sa.Column(sa.Integer, index=True)
 
 class SV_Gene(Base):
-    __tablename__ = 'SV_gene'
+    __tablename__ = 'SV_Gene'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     sv_id = sa.Column(sa.Integer, sa.ForeignKey("SV.id"), nullable=False)
-    gene_id = sa.Column(sa.Integer, sa.ForeignKey("gene.id"), nullable=False)
+    gene_id = sa.Column(sa.Integer, sa.ForeignKey("Gene.id"), nullable=False)
 
 class SV_Exon(Base):
     __tablename__ = 'SV_exon'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     sv_id = sa.Column(sa.Integer, sa.ForeignKey("SV.id"), nullable=False)
-    gene_id = sa.Column(sa.Integer, sa.ForeignKey("gene.id"), nullable=False)
+    gene_id = sa.Column(sa.Integer, sa.ForeignKey("Gene.id"), nullable=False)
 
 class SV_CDS(Base):
     __tablename__ = 'SV_cds'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     sv_id = sa.Column(sa.Integer, sa.ForeignKey("SV.id"), nullable=False)
-    gene_id = sa.Column(sa.Integer, sa.ForeignKey("gene.id"), nullable=False)
+    gene_id = sa.Column(sa.Integer, sa.ForeignKey("Gene.id"), nullable=False)
 
 class HPO(Base):
     __tablename__ = 'HPO'
@@ -101,16 +101,16 @@ class HPO_HPO(Base):
     parent_hpo_id = sa.Column(sa.Integer, sa.ForeignKey("HPO.id"), nullable=False)
 
 class HPO_Gene(Base):
-    __tablename__ = 'HPO_gene'
+    __tablename__ = 'HPO_Gene'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     hpo_id = sa.Column(sa.Integer, sa.ForeignKey("HPO.id"), nullable=False)
-    gene_id = sa.Column(sa.Integer, sa.ForeignKey("gene.id"), nullable=False)
+    gene_id = sa.Column(sa.Integer, sa.ForeignKey("Gene.id"), nullable=False)
 
 class Patient_HPO(Base):
     __tablename__ = 'Patient_HPO'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     hpo_id = sa.Column(sa.Integer, sa.ForeignKey("HPO.id"), nullable=False)
-    patient_id = sa.Column(sa.Integer, sa.ForeignKey("patient.id"), nullable=False)
+    patient_id = sa.Column(sa.Integer, sa.ForeignKey("Patient.id"), nullable=False)
 

@@ -188,6 +188,7 @@ def main(config):
                         gene_id = int(gene.lstrip('ENSG')),
                     )
                     session.add(entity)
+            sv.id = sv_id
                         
         # deal with duplicates
         groups = Interval_base.group(SVs)
@@ -196,7 +197,7 @@ def main(config):
             for sv in group.intervals:
                 Patient_SV_entity = models.Patient_SV(
                     patient_id = input_patient['id'],
-                    sv_id = sv_id,
+                    sv_id = sv.id,
                     genotype = sv.genotype.value,
                     vcf_id = sv.vcf_id,
                     source = sv.source,
