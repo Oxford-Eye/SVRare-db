@@ -9,7 +9,7 @@ from lib import Params, Types, Interval_base
 class SV(Interval_base):
     def __init__(self, chrom, start, end, svtype, FILTER, source, vcf_id, genotype):
         super().__init__(chrom, start, end)
-        self.name = f"{chrom}-{start}-{end}-{svtype}"
+        self.name = f"{chrom}-{start}-{end}-{svtype.value}"
         self.svtype: Types.SVtype = svtype
         self.FILTER: str = FILTER
         self.source: str = source

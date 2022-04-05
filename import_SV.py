@@ -15,7 +15,7 @@ import yaml
 CHROMOSOMES = [str(i) for i in range(23)] + ['X', 'Y']
 CHROMOSOMES += [f"chr{i}" for i in CHROMOSOMES]
 CHROMOSOMES = set(CHROMOSOMES)
-
+# Note that if FILTER is None, it is PASS (weird thing from cyvcf2)
 def get_duplicates(SVs, distance_cutoff):
     # mark duplicate on filtered, canvas call
     # since Canvas call tends to overestimate size
@@ -192,9 +192,12 @@ def main(config):
                         
         # deal with duplicates
         groups = Interval_base.group(SVs)
+        done = set()
         for group in groups:
             duplicate_svs = get_duplicates(group.intervals, config['params']['distance'])
             for sv in group.intervals:
+                if sv.id in done:
+                    continue
                 Patient_SV_entity = models.Patient_SV(
                     patient_id = input_patient['id'],
                     sv_id = sv.id,
@@ -204,31 +207,39 @@ def main(config):
                     filter = sv.FILTER,
                     is_duplicate = True if sv.vcf_id in duplicate_svs else False,
                 )
+                done.add(sv.id)
                 session.add(Patient_SV_entity)
         session.commit()
     session.commit()
     # N_carriers
     inner_session = Session(engine)
     print('calculate N_carriers')
+    #! sqlite doesn't have Math.Max/Min like function to do this live. So have an additional manual check
+    N = 0
     for sv in session.query(models.SV):
+        N += 1
+        if not N % 10000:
+            print(N)
         sv_size = sv.end - sv.start
-        overlapping_svs = session.query(models.SV, models.Patient_SV)\
-            .filter(models.SV.id == models.Patient_SV.sv_id)\
+        overlapping_svs = inner_session.query(models.SV, models.Patient_SV, models.Patient)\
+            .join(models.Patient_SV, models.SV.id == models.Patient_SV.sv_id)\
+            .join(models.Patient, models.Patient_SV.patient_id == models.Patient.id)\
             .filter(
                 (models.SV.chrom == sv.chrom) &
                 (models.SV.sv_type == sv.sv_type) &
                 (models.SV.end >= sv.end - sv_size * config['params']['distance']) &
                 (models.SV.end <= sv.end + sv_size * (1 / (1 - config['params']['distance']) - 1)) &
                 (models.SV.start <= sv.start + sv_size * config['params']['distance']) &
-                (models.SV.start >= sv.start - sv_size * (1 / (1 - config['params']['distance']) -1)) &
-                ((sa.func.min(models.SV.end, sv.end) - sa.func.max(models.SV.start, sv.start)) / (sa.func.max(models.SV.end, sv.end) - sa.func.min(models.SV.start, sv.start)) > (1 - config['params']['distance']) )
+                (models.SV.start >= sv.start - sv_size * (1 / (1 - config['params']['distance']) -1))
             )
         carriers = set()
         for os in overlapping_svs:
             # result is a joined table,
-            # os[0] is SV, os[1] is Patient_SV
-            # get unique patients
-            carriers.add(os[1].patient_id)
+            # os[0] is SV, os[1] is Patient_SV, os[2] is Patient
+            # get unique family_id
+            this_distance = (min(os[0].end, sv.end) - max(os[0].start, sv.start)) / (max(os[0].end, sv.end) - min(os[0].start, sv.start))
+            if this_distance >= 1 - config['params']['distance']:
+                carriers.add(os[2].family_id)
         sv.N_carriers = len(carriers)
     session.commit()
 if __name__ == '__main__':
