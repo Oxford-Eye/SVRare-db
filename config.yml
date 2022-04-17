@@ -1,21 +1,19 @@
-canvas_dir: "/home/jingyu/pchuckle_data/canvas_Nov2019"
-manta_dir: "/home/jingyu/pchuckle_data/manta"
-bam_dir: "/home/jingyu/pchuckle_data/bam"
-db: "sqlite:////home/jingyu/git/cnv/output/sqlite.db"
+patients: patients.tsv
+db: "sqlite:////home/jingyu/git/cnv/output/svrare.sqlite"
 gene_tbx: "data/Homo_sapiens.GRCh37.75.sorted.gtf.gz"
 params:
   output_format: tsv
-  distance: 0.8
+  distance: 0.5
   cutoffs:
     internal_freq: 0.1
     gnomad_freq: 0.01
     dbvar_count: 73
     decipher_freq: 0.01
 dbvar:
-  LOSS: "/media/pontikos_nas2/AnitaSzabo/projects/freddie_braddock/data/dbVAR_SV/GRCh37.nr_deletions.tsv.gz"
-  GAIN: "/media/pontikos_nas2/AnitaSzabo/projects/freddie_braddock/data/dbVAR_SV/GRCh37.nr_duplications.tsv.gz"
-decipher: "/media/pontikos_nas2/AnitaSzabo/projects/freddie_braddock/data/decipher/population_cnv_grch37.sorted.txt.gz"
-gnomad: "/media/pontikos_nas2/AnitaSzabo/projects/freddie_braddock/data/gnomad_v2.1_sv.sites.converted.vcf.gz"
+  LOSS: "data/dbVAR_SV/GRCh37.nr_deletions.tsv.gz"
+  GAIN: "data/GRCh37.nr_duplications.tsv.gz"
+decipher: "data/population_cnv_grch37.sorted.txt.gz"
+gnomad: "data/gnomad_v2.1_sv.sites.converted.vcf.gz"
 
 # hpo source
 hpo_obo_url: http://purl.obolibrary.org/obo/hp.obo

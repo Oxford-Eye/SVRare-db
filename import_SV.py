@@ -1,9 +1,4 @@
-import gzip
-import os
-import glob
-import copy
 import csv
-import argparse
 from lib import models, gnomad, decipher, dbvar, utils, Interval_base, Types
 from lib.patient import Patient, SV
 import sqlalchemy as sa
@@ -32,7 +27,7 @@ def get_duplicates(SVs, distance_cutoff):
                 bad_svs.add(SVs[ind_j].vcf_id)
     return bad_svs
 
-def annotate(SVs: List[SV], freq_dbs: List, config) -> List:
+def annotate(SVs: List[SV], freq_dbs: List, config):
     tbx_gtf = pysam.TabixFile(config['gene_tbx'])
     for sv in SVs:
         # external freqs. Note that only gnomad supports annotation for INV
@@ -237,8 +232,12 @@ def main(config):
             # result is a joined table,
             # os[0] is SV, os[1] is Patient_SV, os[2] is Patient
             # get unique family_id
-            this_distance = (min(os[0].end, sv.end) - max(os[0].start, sv.start)) / (max(os[0].end, sv.end) - min(os[0].start, sv.start))
-            if this_distance >= 1 - config['params']['distance']:
+            denominator = max(os[0].end, sv.end) - min(os[0].start, sv.start)
+            if denominator == 0:
+                similarity = 1
+            else:
+                similarity = (min(os[0].end, sv.end) - max(os[0].start, sv.start)) / denominator
+            if similarity >= 1 - config['params']['distance']:
                 carriers.add(os[2].family_id)
         sv.N_carriers = len(carriers)
     session.commit()
