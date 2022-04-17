@@ -1,0 +1,10 @@
+attrs
+cyvcf2
+numpy
+pandas
+pysam
+pytest
+PyYAML
+scikit_learn
+scipy
+SQLAlchemy
