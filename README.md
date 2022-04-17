@@ -73,7 +73,7 @@ In `patients.tsv` (a tab-delimited file), one can adopt the following format:
 
 | family_id | name | is_proband | relation_to_proband | disease | HPO | bam_path | canvas_path | manta_path | is_solved |
 |---------|-------|------|------|------|------|------|------|------|------|
-| F_01 | OE_01 | 1 | Retinal dystrophy | HP:0000556,HP:0000505 | /path/to/bam/OE_01.bqsr.bam | /path/to/canvas.vcf.gz | /path/to/manta.vcf.gz* | 0
+| F_01 | OE_01 | 1 | | Retinal dystrophy | HP:0000556,HP:0000505 | /path/to/bam/OE_01.bqsr.bam | /path/to/canvas.vcf.gz | /path/to/manta.vcf.gz* | 0
 
 \* Note that Manta does not convert breaking points to inversions by default. Please consult Manta's [manual](https://github.com/Illumina/manta/blob/master/docs/userGuide/README.md#inversions).
 
