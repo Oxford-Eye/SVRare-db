@@ -75,6 +75,8 @@ def main(config):
     with gzip.open(config['gene_tbx'], 'rt') as inf:
         entities = []
         for line in inf:
+            if line.startswith('#'):
+                continue
             row = line.rstrip().split('\t')
             if row[2] != 'gene':
                 continue
@@ -85,7 +87,8 @@ def main(config):
                 info[key] = val
             
             gene_id = int(info['gene_id'].lstrip('ENSG'))
-            symbol = info['gene_name']
+            # sometimes in GRCh38 there's no gene_name
+            symbol = info.get('gene_name', info['gene_id'])
             genes[symbol] = gene_id
             
             entities.append(models.Gene(
