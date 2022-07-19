@@ -60,9 +60,9 @@ class Gene(Base):
     # id is ensembl id without the ENSG part
     id = sa.Column(sa.Integer, primary_key=True)
     symbol =  sa.Column(sa.String, index=True)
-    pli = sa.Column(sa.Integer, index=True)
-    prec = sa.Column(sa.Integer, index=True)
-    oe_lof_upper = sa.Column(sa.Integer, index=True)
+    pli = sa.Column(sa.Float, index=True)
+    prec = sa.Column(sa.Float, index=True)
+    oe_lof_upper = sa.Column(sa.Float, index=True)
     chrom = sa.Column(sa.String, nullable=False)
     start = sa.Column(sa.Integer, index=True)
     end = sa.Column(sa.Integer, index=True)

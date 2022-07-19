@@ -84,9 +84,9 @@ def main(config):
             row_dict = dict(zip(header, row))
             gene_id = int(row_dict['gene_id'].lstrip('ENSG'))
             gnomad_constraints[gene_id] = {
-                'pli': row_dict['pLI'],
-                'prec': row_dict['pRec'],
-                'oe_lof_upper': row_dict['oe_lof_upper'],
+                'pli': float(row_dict['pLI']) if row_dict['pLI'] != 'NA' else None,
+                'prec': float(row_dict['pRec']) if row_dict['pRec'] != 'NA' else None,
+                'oe_lof_upper': float(row_dict['oe_lof_upper']) if row_dict['oe_lof_upper'] != 'NA' else None,
             }
     # store genes[symbol] = id for HPO_gene,  which doesn't have ensembl id
     genes = {}
@@ -153,6 +153,6 @@ def main(config):
             session.commit()
             
 if __name__ == '__main__':
-    with open('config.yml', 'rt') as inf:
+    with open('config_local.yml', 'rt') as inf:
         config = yaml.safe_load(inf)
         sys.exit(main(config))
