@@ -19,6 +19,7 @@ class Patient(Base):
     manta_path = sa.Column(sa.String)
     canvas_path = sa.Column(sa.String)
     bam_path = sa.Column(sa.String)
+    svtools_path = sa.Column(sa.String)
     is_solved = sa.Column(sa.Boolean)
     disease = sa.Column(sa.String)
     is_proband = sa.Column(sa.Boolean)
@@ -59,6 +60,9 @@ class Gene(Base):
     # id is ensembl id without the ENSG part
     id = sa.Column(sa.Integer, primary_key=True)
     symbol =  sa.Column(sa.String, index=True)
+    pli = sa.Column(sa.Integer, index=True)
+    prec = sa.Column(sa.Integer, index=True)
+    oe_lof_upper = sa.Column(sa.Integer, index=True)
     chrom = sa.Column(sa.String, nullable=False)
     start = sa.Column(sa.Integer, index=True)
     end = sa.Column(sa.Integer, index=True)
@@ -111,6 +115,6 @@ class Patient_HPO(Base):
     __tablename__ = 'Patient_HPO'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    hpo_id = sa.Column(sa.Integer, sa.ForeignKey("HPO.id"), nullable=False)
+    hpo_id = sa.Column(sa.Integer, sa.ForeignKey("HPO.id"), nullable=True)
     patient_id = sa.Column(sa.Integer, sa.ForeignKey("Patient.id"), nullable=False)
 

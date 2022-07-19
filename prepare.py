@@ -70,6 +70,24 @@ def main(config):
             session.commit()
     
     # gene
+    # get gnomad gene constraints
+    gnomad_constraints = {}
+    with urllib.request.urlopen(config['gnomad_constraint_url']) as zfd:
+        fd = gzip.GzipFile(fileobj=zfd, mode="r")
+        header = []
+        for line in fd:
+            line = line.decode('utf8')
+            row = line.rstrip().split('\t')
+            if not header:
+                header = row
+                continue
+            row_dict = dict(zip(header, row))
+            gene_id = int(row_dict['gene_id'].lstrip('ENSG'))
+            gnomad_constraints[gene_id] = {
+                'pli': row_dict['pLI'],
+                'prec': row_dict['pRec'],
+                'oe_lof_upper': row_dict['oe_lof_upper'],
+            }
     # store genes[symbol] = id for HPO_gene,  which doesn't have ensembl id
     genes = {}
     with gzip.open(config['gene_tbx'], 'rt') as inf:
@@ -90,13 +108,21 @@ def main(config):
             # sometimes in GRCh38 there's no gene_name
             symbol = info.get('gene_name', info['gene_id'])
             genes[symbol] = gene_id
+            constraints = gnomad_constraints.get(gene_id, {
+                'pli': None,
+                'prec': None,
+                'oe_lof_upper': None
+            })
             
             entities.append(models.Gene(
                 id = gene_id,
                 symbol = symbol,
                 chrom = row[0],
                 start = int(row[3]),
-                end = int(row[4])
+                end = int(row[4]),
+                pli = constraints['pli'],
+                prec = constraints['prec'],
+                oe_lof_upper =  constraints['oe_lof_upper'],
             ))
         with Session(engine) as session:
             session.add_all(entities)

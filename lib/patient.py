@@ -1,8 +1,9 @@
 import attr
 from pathlib import Path
+import os
 from collections import Counter
 import numpy as np
-from cyvcf2 import VCF, Variant
+from cyvcf2 import VCF
 from typing import Type, Tuple, List
 from lib import Params, Types, Interval_base
 
@@ -24,6 +25,7 @@ class Patient:
     name: str = attr.ib()
     canvas_file: str = attr.ib()
     manta_file: str = attr.ib()
+    svtools_file: str = attr.ib()
     bam_file: str = attr.ib()
 
     def get_SV(self) -> List[SV]:
@@ -40,18 +42,27 @@ class Patient:
         vcf = []
         what = what.lower()
         if what == 'manta':
+            if not os.path.isfile(self.manta_file):
+                return []
             vcf = VCF(self.manta_file)
         elif what == 'canvas':
+            if not os.path.isfile(self.canvas_file):
+                return []
             vcf = VCF(self.canvas_file)
+        elif what == 'svtools':
+            if not os.path.isfile(self.svtools_file):
+                return []
+            vcf =  VCF(self.svtools_file)
         else:
             raise ValueError(f"can only parse manta or canvas file. Given {what}")
+        sample_ind = vcf.samples.index(self.name)
         svs = []
         for variants in vcf:
             if not variants.ALT:
                 continue
             for variant_ind, variant in enumerate(variants.ALT):
                 svtype = translate_svtype(variants, variant)
-                genotype = translate_genotype(tuple(variants.genotypes[0]))
+                genotype = translate_genotype(tuple(variants.genotypes[sample_ind]))
                 if svtype not in (Types.SVtype.LOSS, Types.SVtype.GAIN, Types.SVtype.INV):
                     continue
                 if genotype not in (Types.Genotype.HOM, Types.Genotype.HET):
@@ -88,6 +99,17 @@ def translate_svtype(variants, variant) -> Types.SVtype:
         return Types.SVtype.UNKNOWN
     if ID.startswith('Manta'):
         svtype = ID.split(':')[0][5:]
+        if svtype == 'DEL':
+            return Types.SVtype.LOSS
+        if svtype == 'INS':
+            return Types.SVtype.INS
+        if svtype == 'DUP':
+            return Types.SVtype.GAIN
+        if svtype == 'INV':
+            return Types.SVtype.INV
+        return Types.SVtype.UNKNOWN
+    svtype = variants.INFO.get('SVTYPE', None)
+    if svtype is not None:
         if svtype == 'DEL':
             return Types.SVtype.LOSS
         if svtype == 'INS':

@@ -96,6 +96,7 @@ def main(config):
             family_id = patient['family_id'],
             manta_path = patient['manta_path'],
             canvas_path = patient['canvas_path'],
+            svtools_path = patient['svtools_path'],
             bam_path = patient['bam_path'],
             is_solved = True if int(patient['is_solved']) != 0 else False,
             disease = patient['disease'],
@@ -115,7 +116,7 @@ def main(config):
             raise ValueError(f"Patient not seen in db: {patient['name']}")
         patient['id'] = patient_id
         hpo_ids = ()
-        if patient['HPO']:
+        if patient['HPO'].startswith('HP:'):
             hpo_ids = (int(hpo.lstrip('HP:')) for hpo in patient['HPO'].split(','))
         for hpo_id in hpo_ids:
             entities.append(models.Patient_HPO(
@@ -135,9 +136,10 @@ def main(config):
             canvas_file = input_patient['canvas_path'],
             manta_file = input_patient['manta_path'],
             bam_file = input_patient['bam_path'],
+            svtools_file = input_patient['svtools_path'],
         )
         # get manta / canvas etc.
-        SVs = patient.parse_vcf('manta') + patient.parse_vcf('canvas')
+        SVs = patient.parse_vcf('manta') + patient.parse_vcf('canvas') + patient.parse_vcf('svtools')
         # filter SVs on chromosomes
         SVs = list(filter(lambda x: x.chrom in CHROMOSOMES, SVs))
         # annotate SVs
@@ -207,6 +209,8 @@ def main(config):
         session.commit()
     session.commit()
     # N_carriers
+    # this step will take 3 days for 25k SVs!!
+    # TODO: speed up (parallelise?)
     inner_session = Session(engine)
     print('calculate N_carriers')
     #! sqlite doesn't have Math.Max/Min like function to do this live. So have an additional manual check
@@ -242,7 +246,7 @@ def main(config):
         sv.N_carriers = len(carriers)
     session.commit()
 if __name__ == '__main__':
-    with open('config.yml', 'rt') as inf:
+    with open('/well/brc/JingYu/git/SVRare-db/config.yml', 'rt') as inf:
         config = yaml.safe_load(inf)
         main(config)
         
