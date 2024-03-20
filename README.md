@@ -38,6 +38,10 @@ with gzip.open(infile, 'rt') as inf, open(outfile, 'wt') as outf:
 Download non-redundant LOSS and GAIN files from https://github.com/ncbi/dbvar/blob/master/Structural_Variant_Sets/Nonredundant_Structural_Variants/README.md  
 Since the gz files are not bgzipped, you'll have to unzip and bgzip the files, then index them with
 `tabix -s 1 -b 2 -e 3 xxx.tsv.gz`
+For GRCh38 you'll need to fix the contigs as well as they don't have 'chr' prefix.
+```
+awk '{print (/^#/?"":"chr")$0}' GRCh38.nr_deletions.tsv | sed 's/chrmt/chrM/' |  bgzip -c >GRCh38.nr_deletions.tsv.gz
+```
 
 ## Decipher
 Download from https://decipher.sanger.ac.uk/about/downloads/data
@@ -62,7 +66,9 @@ data.sort(key=lambda x: (x[1], x[2], x[3]))
 with open(outfile, 'wt') as outf:
   outf.write(header)
   for d in data:
-    outf.write('\t'.join([str(i) for i in d]) + '\n)
+    # if you want to prefix with chr for GRCh38
+    # d[1] = 'chr' + d[1]
+    outf.write('\t'.join([str(i) for i in d]) + '\n')
 ```
 Then bgzip and index using `bgzip population_cnv.sorted.txt && tabix -s 2 -b 3 -e 4 population_cnv.sorted.txt.gz`
 

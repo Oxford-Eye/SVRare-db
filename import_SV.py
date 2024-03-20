@@ -94,9 +94,10 @@ def main(config):
         entities.append(models.Patient(
             name = patient['name'],
             family_id = patient['family_id'],
-            manta_path = patient['manta_path'],
-            canvas_path = patient['canvas_path'],
-            svtools_path = patient['svtools_path'],
+            manta_path = patient.get('manta_path', None),
+            canvas_path = patient.get('canvas_path', None),
+            svtools_path = patient.get('svtools_path', None),
+            pbsv_path = patient.get('pbsv_path', None),
             bam_path = patient['bam_path'],
             is_solved = True if int(patient['is_solved']) != 0 else False,
             disease = patient['disease'],
@@ -133,13 +134,14 @@ def main(config):
         print(f"importing {input_patient['name']}")
         patient = Patient(
             name = input_patient['name'],
-            canvas_file = input_patient['canvas_path'],
-            manta_file = input_patient['manta_path'],
+            canvas_file = input_patient.get('canvas_path', None),
+            manta_file = input_patient.get('manta_path', None),
             bam_file = input_patient['bam_path'],
-            svtools_file = input_patient['svtools_path'],
+            svtools_file = input_patient.get('svtools_path', None),
+            pbsv_file = input_patient.get('pbsv_path', None),
         )
         # get manta / canvas etc.
-        SVs = patient.parse_vcf('manta') + patient.parse_vcf('canvas') + patient.parse_vcf('svtools')
+        SVs = patient.parse_vcf('manta') + patient.parse_vcf('canvas') + patient.parse_vcf('svtools') + patient.parse_vcf('pbsv')
         # filter SVs on chromosomes
         SVs = list(filter(lambda x: x.chrom in CHROMOSOMES, SVs))
         # annotate SVs
@@ -246,7 +248,7 @@ def main(config):
         sv.N_carriers = len(carriers)
     session.commit()
 if __name__ == '__main__':
-    with open('/well/brc/JingYu/git/SVRare-db/config.yml', 'rt') as inf:
+    with open('config.yml', 'rt') as inf:
         config = yaml.safe_load(inf)
         main(config)
         

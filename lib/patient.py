@@ -26,6 +26,7 @@ class Patient:
     canvas_file: str = attr.ib()
     manta_file: str = attr.ib()
     svtools_file: str = attr.ib()
+    pbsv_file: str = attr.ib()
     bam_file: str = attr.ib()
 
     def get_SV(self) -> List[SV]:
@@ -42,19 +43,23 @@ class Patient:
         vcf = []
         what = what.lower()
         if what == 'manta':
-            if not os.path.isfile(self.manta_file):
+            if self.manta_file is None or not os.path.isfile(self.manta_file):
                 return []
             vcf = VCF(self.manta_file)
         elif what == 'canvas':
-            if not os.path.isfile(self.canvas_file):
+            if self.canvas_file is None or not os.path.isfile(self.canvas_file):
                 return []
             vcf = VCF(self.canvas_file)
         elif what == 'svtools':
-            if not os.path.isfile(self.svtools_file):
+            if self.svtools_file is None or not os.path.isfile(self.svtools_file):
                 return []
             vcf =  VCF(self.svtools_file)
+        elif what == 'pbsv':
+            if self.pbsv_file is None or not os.path.isfile(self.pbsv_file):
+                return []
+            vcf =  VCF(self.pbsv_file)
         else:
-            raise ValueError(f"can only parse manta or canvas file. Given {what}")
+            raise ValueError(f"can only parse manta, canvas, svtools, pbsv file. Given {what}")
         sample_ind = vcf.samples.index(self.name)
         svs = []
         for variants in vcf:

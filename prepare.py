@@ -131,7 +131,11 @@ def main(config):
     with urllib.request.urlopen(config['hpo_gene_url']) as f:
         entities = []
         html = f.read().decode('utf-8')
+        header = []
         for line in html.split('\n'):
+            if not header:
+                header = line.split('\t')
+                continue
             if line.startswith('#') or not line.strip():
                 continue
             row = line.split('\t')
@@ -153,6 +157,6 @@ def main(config):
             session.commit()
             
 if __name__ == '__main__':
-    with open('config_local.yml', 'rt') as inf:
+    with open('config.yml', 'rt') as inf:
         config = yaml.safe_load(inf)
         sys.exit(main(config))

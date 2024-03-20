@@ -13,7 +13,6 @@ class Gnomad(object):
     tbx_header = [
         'chrom',
         'start',
-        'end',
         'ID',
         'ref',
         'alt',

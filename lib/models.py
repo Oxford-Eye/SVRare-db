@@ -20,6 +20,7 @@ class Patient(Base):
     canvas_path = sa.Column(sa.String)
     bam_path = sa.Column(sa.String)
     svtools_path = sa.Column(sa.String)
+    pbsv_path = sa.Column(sa.String)
     is_solved = sa.Column(sa.Boolean)
     disease = sa.Column(sa.String)
     is_proband = sa.Column(sa.Boolean)
